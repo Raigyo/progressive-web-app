@@ -41,19 +41,19 @@ if ("serviceWorker" in navigator) {
 
 /* Non persistant notifications */
 
-if (window.Notification && window.Notification !== "denied") {
-  Notification.requestPermission((perm) => {
-    if (perm === "granted") {
-      const options = {
-        body: "Notification body",
-        icon: "images/icons/icon-72x72.png",
-      };
-      const notif = new Notification(
-        "Non persistant notification from JS",
-        options
-      );
-    } else {
-      console.log("Authorization of notifications refused");
-    }
-  });
-}
+// if (window.Notification && window.Notification !== "denied") {
+//   Notification.requestPermission((perm) => {
+//     if (perm === "granted") {
+//       const options = {
+//         body: "Notification body",
+//         icon: "images/icons/icon-72x72.png",
+//       };
+//       const notif = new Notification(
+//         "Non persistant notification from JS",
+//         options
+//       );
+//     } else {
+//       console.log("Authorization of notifications refused");
+//     }
+//   });
+// }

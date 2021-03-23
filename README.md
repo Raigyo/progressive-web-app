@@ -220,7 +220,7 @@ if (window.Notification && window.Notification !== "denied") {
 }
 ````
 
-![push-capture](_readme-img/push-capture.png)
+![notif-capture](_readme-img/notif-capture-01.png)
 
 #### Persistant - from service-worker.js
 
@@ -242,9 +242,15 @@ self.registration.showNotification(
   {
     body: "Notification body",
     icon: "images/icons/icon-72x72.png",
+    actions: [
+      { action: "accept", title: "Accept" },
+      { action: "refuse", title: "Refuse" },
+    ],
   }
 );
 ````
+
+![notif-capture](_readme-img/notif-capture-02.png)
 
 ## Dependancies
 

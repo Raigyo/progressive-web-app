@@ -22,7 +22,7 @@ self.addEventListener("install", (evt) => {
 });
 
 self.addEventListener("activate", (evt) => {
-  console.log(`SW activated at ${new Date().toLocaleTimeString()}`);
+  console.log(`sw activated at ${new Date().toLocaleTimeString()}`);
   let cacheCleanedPromise = caches.keys().then((keys) => {
     keys.forEach((key) => {
       if (key !== cacheName) {
@@ -45,42 +45,42 @@ self.addEventListener("fetch", (evt) => {
   console.log("fetch: ", evt.request.url);
 
   /* Strategy 1: Cache only with Network Fallback */
-  // evt.respondWith(
-  //   caches.match(evt.request).then((res) => {
-  //     console.log(`fetched url from cache: ${evt.request.url}`, res);
-  //     // cache
-  //     if (res) {
-  //       return res;
-  //     }
-  //     // otherwise network
-  //     return fetch(evt.request).then((newResponse) => {
-  //       console.log(
-  //         `fetched url from network to cache: ${evt.request.url}`,
-  //         res
-  //       );
-  //       caches
-  //         .open(cacheName)
-  //         .then((cache) => cache.put(evt.request, newResponse));
-  //       return newResponse.clone(); // we can't send the same response twice so we clone it
-  //     });
-  //   })
-  // );
+  evt.respondWith(
+    caches.match(evt.request).then((res) => {
+      console.log(`fetched url from cache: ${evt.request.url}`, res);
+      // cache
+      if (res) {
+        return res;
+      }
+      // otherwise network
+      return fetch(evt.request).then((newResponse) => {
+        console.log(
+          `fetched url from network to cache: ${evt.request.url}`,
+          res
+        );
+        caches
+          .open(cacheName)
+          .then((cache) => cache.put(evt.request, newResponse));
+        return newResponse.clone(); // we can't send the same response twice so we clone it
+      });
+    })
+  );
 
   /* Strategy 2: Network first with cache fallback */
-  evt.respondWith(
-    fetch(evt.request)
-      // from network to cache
-      .then((res) => {
-        console.log(`fetched url from network: ${evt.request.url}`);
-        caches.open(cacheName).then((cache) => cache.put(evt.request, res));
-        return res.clone();
-      })
-      // otherwhise cache
-      .catch((err) => {
-        console.log(`fetched url from cache: ${evt.request.url}`);
-        return caches.match(evt.request);
-      })
-  );
+  // evt.respondWith(
+  //   fetch(evt.request)
+  //     // from network to cache
+  //     .then((res) => {
+  //       console.log(`fetched url from network: ${evt.request.url}`);
+  //       caches.open(cacheName).then((cache) => cache.put(evt.request, res));
+  //       return res.clone();
+  //     })
+  //     // otherwhise cache
+  //     .catch((err) => {
+  //       console.log(`fetched url from cache: ${evt.request.url}`);
+  //       return caches.match(evt.request);
+  //     })
+  // );
 });
 
 /* Persistant notifications */
