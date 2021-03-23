@@ -21,10 +21,16 @@ function loadTechnologies() {
 loadTechnologies(technos);
 
 // if("serviceWorker" in navigator){
-if (navigator.serviceWorker) {
-  navigator.serviceWorker
-    .register("service-worker.js")
-    .catch((err) => console.error);
+// if (navigator.serviceWorker) {
+//   navigator.serviceWorker
+//     .register("service-worker.js")
+//     .catch((err) => console.error);
+// }
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("service-worker.js");
+  });
 }
 
 // if (window.caches) {
@@ -32,3 +38,22 @@ if (navigator.serviceWorker) {
 //     cache.addAll(["index.html", "main.js", "/vendors/bootstrap.min.css"]);
 //   });
 // }
+
+/* Non persistant notifications */
+
+if (window.Notification && window.Notification !== "denied") {
+  Notification.requestPermission((perm) => {
+    if (perm === "granted") {
+      const options = {
+        body: "Notification body",
+        icon: "images/icons/icon-72x72.png",
+      };
+      const notif = new Notification(
+        "Non persistant notification from JS",
+        options
+      );
+    } else {
+      console.log("Authorization of notifications refused");
+    }
+  });
+}
