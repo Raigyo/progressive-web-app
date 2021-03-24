@@ -16,8 +16,8 @@ Progressive Web Apps are web apps that use emerging web browser APIs and feature
 - Clone
 - `npm install`
 - `npm run jsonserver` (json with data from client part)
-- `npm run pushserver`
 - `npm start` (main application): [http://127.0.0.1:3000/](http://127.0.0.1:3000/)
+- `npm run pushserver` (when launched send a push message)
 
 ````
 -- images
