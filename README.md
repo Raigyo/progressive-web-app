@@ -9,9 +9,33 @@ March 2021
 
 ![logo](_readme-img/pwa.png)
 
-## Concepts
-
 Progressive Web Apps are web apps that use emerging web browser APIs and features along with traditional progressive enhancement strategy to bring a native app-like user experience to cross-platform web applications. Progressive Web Apps are a useful design pattern, though they aren't a formalized standard. PWA can be thought of as similar to AJAX or other similar patterns that encompass a set of application attributes, including use of specific web technologies and techniques. This set of docs tells you all you need to know about them.
+
+## Test localy
+
+- Clone
+- `npm install`
+- `npm run jsonserver` (json with data from client part)
+- `npm run pushserver`
+- `npm start` (main application): [http://127.0.0.1:3000/](http://127.0.0.1:3000/)
+
+````
+-- images
+-- vendors
+    -- bootstrap.min.css
+-- add_techno.html
+-- contact.html
+-- contact.js
+-- index.html
+-- main.js
+-- manifest.webmanifest
+-- pushClientSubscription.json
+-- pushServer.js
+-- pushServerKeys.json
+-- service-worker.js
+````
+
+## Concepts
 
 ### Service Worker API
 
@@ -252,6 +276,166 @@ self.registration.showNotification(
 
 ![notif-capture](_readme-img/notif-capture-02.png)
 
+### Push event (notification from Push Server)
+
+#### Test push in DevTool
+
+````js
+self.addEventListener("push", (evt) => {
+  console.log("push event: ", evt);
+  console.log("push event data: ", evt.data.text());
+  const title = evt.data.text();
+  evt.waitUntil(
+    self.registration.showNotification(title, {
+      body: "Push notification",
+      image: "images/icons/icon-96x96.png",
+    })
+  );
+});
+````
+
+Test using DevTool: Application / Service workers / Push
+
+#### Step 1: Generate Vapid Key
+
+Using dependancies web-push.
+
+`web-push generate-vapid-keys --json`
+
+Output: {"publicKey":"xxxxx","privateKey":"xxxxx"}
+
+Or to put it in a Json file:
+
+`web-push generate-vapid-keys --json > pushServerKeys.json`
+
+#### Step 2: Subscription (ask to Firebase Cloud Messaging (FCM) and FCM send it)
+
+**main.js**
+
+*Subscription*
+
+````js
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker
+      .register("service-worker.js")
+      .then((registration) => {
+        // Public vapid key - should be send using server
+        const publicKey =
+          "BGM2Ld5GpBXX-sc47KbdsMphvA8f_Vmd3e88lmF2fw3qxmGmuhLf1NkifelEK9PsMsV9A_DouB8Psz-94MO9iCk";
+        registration.pushManager.getSubscription().then((subscription) => {
+          if (subscription) {
+            console.log("Already suscribed: ", subscription);
+            extractKeysFromArrayBuffer(subscription);
+            return subscription;
+          } else {
+            // ask for subscription
+            const convertKey = urlBase64ToUint8Array(publicKey);
+            return registration.pushManager
+              .subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: convertKey,
+              })
+              .then((newSubscription) => {
+                console.log("New subscription: ", newSubscription);
+                extractKeysFromArrayBuffer(subscription);
+                return subscription;
+              });
+          }
+        });
+      });
+  });
+}
+
+function extractKeysFromArrayBuffer(subscription) {
+  // no more keys proprety directly visible on the subscription objet. So you have to use getKey()
+  const keyArrayBuffer = subscription.getKey("p256dh");
+  const authArrayBuffer = subscription.getKey("auth");
+  const p256dh = btoa(
+    String.fromCharCode.apply(null, new Uint8Array(keyArrayBuffer))
+  );
+  const auth = btoa(
+    String.fromCharCode.apply(null, new Uint8Array(authArrayBuffer))
+  );
+  console.log("p256dh key", keyArrayBuffer, p256dh);
+  console.log("auth key", authArrayBuffer, auth);
+}
+````
+
+*When using your VAPID key in your web app, you'll need to convert the URL safe base64 string to a Uint8Array to pass into the subscribe call, which you can do like so:*
+
+````js
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+````
+
+#### Step 3: Push server Node (that will send push notififaction to clients who suscribed in step 2)
+
+**pushClientSubscription.json**
+
+Data retrieved using console log from *main.js*.
+
+````json
+{
+  "endpoint": "https://fcm.googleapis.com/fcm/send/fehEIzpuc00:APA91bGYHQQ_H6NWVqIIqq_bdy4u3gLGymyJrAy63nYrSMOX2zX2_HvMRkXn1j5nOzk08KnFu0VZbCkoCZIFyzJ_Lplra9BYCI3VFUvxWcLKZRfST30tQdGYxRlIsCis2HXZlW2MFJlQ",
+  "keys": {
+    "auth":"UrB1eoR6Zz35Lqv+lPgBZg==",
+    "p256dh":"BPW+3NNxLwndYRorD6VEgv1bhO2L1I1jpHC0IBlKakWOY36gsYsdxVGdTmsCaMn+6xpLCL8rpGuRsEg81goACns="
+  }
+}
+````
+
+**pushServerKeys.json**
+
+````json
+{
+  "publicKey": "BGM2Ld5GpBXX-sc47KbdsMphvA8f_Vmd3e88lmF2fw3qxmGmuhLf1NkifelEK9PsMsV9A_DouB8Psz-94MO9iCk",
+  "privateKey": "wlydFgZrBka4uXdgrH4AzHknBgBtK8_s38uB5V2uX5Q"
+}
+````
+
+**pushServer.js**
+
+````js
+const webPush = require("web-push");
+const pushServerKeys = require("./pushServerKeys.json");
+const pushClientSubscription = require("./pushClientSubscription.json");
+
+webPush.setVapidDetails(
+  "mailto:vincent.chilot@gmail.com",
+  pushServerKeys.publicKey,
+  pushServerKeys.privateKey
+);
+
+const subscription = {
+  endpoint: pushClientSubscription.endpoint,
+  keys: {
+    auth: pushClientSubscription.keys.auth,
+    p256dh: pushClientSubscription.keys.p256dh,
+  },
+};
+
+webPush
+  .sendNotification(subscription, "Notification sent from push node server")
+  .then((res) => console.log("Push notification well send from Node", res))
+  .catch((err) => console.error);
+
+````
+
+![notif-capture](_readme-img/push-nodecapture-03.png)
+
+![notif-capture](_readme-img/push-nodecapture-04.png)
+
 ## Dependancies
 
 - [live-server](https://www.npmjs.com/package/live-server): This is a little development server with live reload capability. Use it for hacking your HTML/JavaScript/CSS files, but not for deploying the final site.
@@ -267,6 +451,13 @@ self.registration.showNotification(
 To launch server on a json, here *db.json*:
 
 `json-server -p 3001 --watch db.json`
+
+- [web-push](https://www.npmjs.com/package/web-push): Web push requires that push messages triggered from a backend be done via the Web Push Protocol and if you want to send data with your push message, you must also encrypt that data according to the Message Encryption for Web Push spec.
+
+`npm i web-push`
+
+`npm i web-push -g`
+
 
 ## Useful links
 

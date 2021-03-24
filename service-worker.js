@@ -1,3 +1,5 @@
+/* Service workers */
+
 console.log("hello from sw");
 const cacheName = "cache-watch-opened-1.3";
 
@@ -110,4 +112,18 @@ self.addEventListener("notificationclick", (evt) => {
     console.log("You clicked on the notification (not on one of the buttons)");
   }
   evt.notification.close();
+});
+
+/* Push event (notification from Push Server)*/
+
+self.addEventListener("push", (evt) => {
+  console.log("push event: ", evt);
+  console.log("push event data: ", evt.data.text());
+  const title = evt.data.text();
+  evt.waitUntil(
+    self.registration.showNotification(title, {
+      body: "Push notification",
+      image: "images/icons/icon-96x96.png",
+    })
+  );
 });
