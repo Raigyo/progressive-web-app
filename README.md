@@ -1,8 +1,8 @@
-# PWA
+# PWA - Progressive Web Apps
 
 March 2021
 
-> 🔨  From udemy: [Les Progressive Web Apps (PWA) par la pratique - Samir Medjdoub de Code Concept](https://www.udemy.com/course/les-progressive-web-apps-pwa-par-la-pratique)
+> 🔨  Progressive Web Apps: Service workers, Manifest, Cache, Notification Push... From udemy: [Les Progressive Web Apps (PWA) par la pratique - Samir Medjdoub / Code Concept](https://www.udemy.com/course/les-progressive-web-apps-pwa-par-la-pratique)
 
 * * *
 
