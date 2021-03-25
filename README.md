@@ -2,7 +2,7 @@
 
 March 2021
 
-> 🔨  From udemy: [Les Progressive Web Apps (PWA) par la pratique - Code Concept](https://www.udemy.com/course/les-progressive-web-apps-pwa-par-la-pratique)
+> 🔨  From udemy: [Les Progressive Web Apps (PWA) par la pratique - Samir Medjdoub de Code Concept](https://www.udemy.com/course/les-progressive-web-apps-pwa-par-la-pratique)
 
 * * *
 
@@ -452,6 +452,8 @@ To launch server on a json, here *db.json*:
 
 `json-server -p 3001 --watch db.json`
 
+Online version [https://raigyo-pwa-json.herokuapp.com/technos](https://raigyo-pwa-json.herokuapp.com/technos)
+
 - [web-push](https://www.npmjs.com/package/web-push): Web push requires that push messages triggered from a backend be done via the Web Push Protocol and if you want to send data with your push message, you must also encrypt that data according to the Message Encryption for Web Push spec.
 
 `npm i web-push`
@@ -469,3 +471,7 @@ To launch server on a json, here *db.json*:
 - [Web app manifests](https://developer.mozilla.org/en-US/docs/Web/Manifest)
 - [PWA Manifest Generator](https://www.simicart.com/manifest-generator.html/)
 - [Notifications API: Advanced Progressive Web Apps](https://www.thinktecture.com/en/pwa/push-notifications-api/)
+- [My JSON Server](https://my-json-server.typicode.com/)
+- [jesperorb/json-server-heroku](https://github.com/jesperorb/json-server-heroku)
+- [idb.js/database.js](https://glitch.com/edit/#!/dream-catcher?path=README.md%3A1%3A0)
+- [Send messages when you’re back online with Service Workers and Background Sync](https://www.twilio.com/blog/2017/02/send-messages-when-youre-back-online-with-service-workers-and-background-sync.html)

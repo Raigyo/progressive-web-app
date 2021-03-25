@@ -4,7 +4,10 @@ console.log("hello depuis main");
 const technosDiv = document.querySelector("#technos");
 
 function loadTechnologies() {
-  fetch("http://localhost:3001/technos")
+  // fetch("http://localhost:3001/technos")
+  fetch(
+    "https://raigyo-pwa-json.herokuapp.com/technos"
+  )
     .then((response) => {
       response.json().then((technos) => {
         const allTechnos = technos

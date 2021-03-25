@@ -1,5 +1,7 @@
 /* Service workers */
 
+self.importScripts("idb.js", "database.js");
+
 console.log("hello from sw");
 const cacheName = "cache-watch-opened-1.3";
 
@@ -8,14 +10,16 @@ self.addEventListener("install", (evt) => {
   const cachePromise = caches.open(cacheName).then((cache) => {
     return cache
       .addAll([
-        "index.html",
-        "main.js",
-        "style.css",
-        "vendors/bootstrap.min.css",
-        "add_techno.html",
-        "add_techno.js",
-        "contact.html",
-        "contact.js",
+        "./index.html",
+        "./main.js",
+        "./idb.js",
+        "./database.js",
+        "./style.css",
+        "./vendors/bootstrap.min.css",
+        "./add_techno.html",
+        "./add_techno.js",
+        "./contact.html",
+        "./contact.js",
       ])
       .then(console.log("Cache initiated"))
       .catch(console.err);
@@ -126,4 +130,48 @@ self.addEventListener("push", (evt) => {
       image: "images/icons/icon-96x96.png",
     })
   );
+});
+
+/* Event sync / unsync fort push when offline */
+
+self.addEventListener("sync", (event) => {
+  if (event.tag === "sync-technos") {
+    console.log("attempting sync", event.tag);
+    console.log("syncing", event.tag);
+    event.waitUntil(
+      getAllTechnos().then((technos) => {
+        console.log("got technos from sync callback", technos);
+
+        const unsynced = technos.filter((techno) => techno.unsynced);
+
+        console.log("pending sync", unsynced);
+
+        return Promise.all(
+          unsynced.map((techno) => {
+            console.log("Attempting fetch", techno);
+            fetch("https://raigyo-pwa-json.herokuapp.com/technos", {
+              method: "POST",
+              body: JSON.stringify(techno),
+              headers: {
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": "application/json",
+              },
+            })
+              .then(() => {
+                console.log("Sent to server");
+                console.log("id send to putTechno", techno.id);
+                return putTechno(
+                  Object.assign({}, techno, { unsynced: false }),
+                  techno.id
+                );
+              })
+              .catch(function (err) {
+                console.error(err);
+              });
+          })
+        );
+      })
+    );
+  }
 });
